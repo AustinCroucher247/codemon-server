@@ -76,6 +76,23 @@ io.on('connection', (socket) => {
 
         console.log(`User with ID ${userId} joined room with ID ${roomId}`);
     });
+    socket.on('changeTrainer', ({ roomId, userId, trainer }) => {
+        const room = rooms[roomId];
+        const user = room.users.find((user) => user.userId === userId);
+        if (user) {
+            user.trainer = trainer;
+            io.to(roomId).emit('updateTrainer', { userId, trainer });
+        }
+    });
+
+    socket.on('changePokemon', ({ roomId, userId, pokemon }) => {
+        const room = rooms[roomId];
+        const user = room.users.find((user) => user.userId === userId);
+        if (user) {
+            user.pokemon = pokemon;
+            io.to(roomId).emit('updatePokemon', { userId, pokemon });
+        }
+    });
 
     socket.on('disconnect', () => {
         console.log('Client disconnected');
