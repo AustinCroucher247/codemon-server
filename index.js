@@ -69,11 +69,8 @@ io.on('connection', (socket) => {
             };
         }
 
-        const userExists = rooms[roomId].users.some((user) => user.userId === userId);
-        if (!userExists) {
-            const user = { userId, username };
-            rooms[roomId].users.push(user);
-        }
+        const user = { userId, username };
+        rooms[roomId].users.push(user);
 
         io.to(roomId).emit('roomUsers', { users: rooms[roomId].users });
 
@@ -82,6 +79,21 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log('Client disconnected');
+
+        // Find the room that the user is connected to
+        const room = Object.values(rooms).find(room => {
+            return room.users.some(user => user.userId === socket.id);
+        });
+
+        if (room) {
+            // Remove the user from the room
+            room.users = room.users.filter(user => user.userId !== socket.id);
+
+            // Emit updated user list to the room
+            io.to(roomId).emit('roomUsers', { users: room.users });
+
+            console.log(`User with ID ${socket.id} disconnected from room with ID ${roomId}`);
+        }
     });
 });
 
