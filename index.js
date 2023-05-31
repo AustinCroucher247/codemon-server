@@ -69,8 +69,11 @@ io.on('connection', (socket) => {
             };
         }
 
-        const user = { userId, username };
-        rooms[roomId].users.push(user);
+        const userExists = rooms[roomId].users.some((user) => user.userId === userId);
+        if (!userExists) {
+            const user = { userId, username };
+            rooms[roomId].users.push(user);
+        }
 
         io.to(roomId).emit('roomUsers', { users: rooms[roomId].users });
 
